@@ -38,7 +38,8 @@ function createStadiumRoof(scene, options = {}) {
                 roofThickness, 
                 roofColor, 
                 roofTransparency,
-                supportColor
+                supportColor,
+                standDepth  // Pass standDepth to createModernRoof
             });
             break;
         case 'classic':
@@ -77,7 +78,8 @@ function createModernRoof(group, options) {
         roofThickness, 
         roofColor, 
         roofTransparency,
-        supportColor
+        supportColor,
+        standDepth = 20  // Add default value here as well
     } = options;
 
     // Create curved roof
