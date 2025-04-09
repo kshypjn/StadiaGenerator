@@ -12,7 +12,8 @@ function createStadiumRoof(scene, options = {}) {
         roofStyle = 'modern', // 'modern', 'classic', 'partial'
         roofColor = 0xCCCCCC,
         roofTransparency = 0.7,
-        supportColor = 0x888888
+        supportColor = 0x888888,
+        stadiumFootprint = { width: 1, length: 1 }
     } = options;
 
     // Remove existing roof if any
@@ -22,10 +23,12 @@ function createStadiumRoof(scene, options = {}) {
     roofGroup = new THREE.Group();
     roofGroup.name = 'roof';
 
-    // Calculate roof dimensions
-    const totalLength = fieldLength + (standDepth * 2);
-    const totalWidth = fieldWidth + (standDepth * 2);
-    const roofHeight = standHeight + 5;
+    // Calculate roof dimensions based on stadium footprint
+    const adjustedLength = fieldLength * stadiumFootprint.length;
+    const adjustedWidth = fieldWidth * stadiumFootprint.width;
+    const totalLength = adjustedLength + (standDepth * 2);
+    const totalWidth = adjustedWidth + (standDepth * 2);
+    const roofHeight = standHeight + 5; // Roof height relative to stand height
     const roofThickness = 0.5;
 
     // Create different roof styles
@@ -39,7 +42,9 @@ function createStadiumRoof(scene, options = {}) {
                 roofColor, 
                 roofTransparency,
                 supportColor,
-                standDepth  // Pass standDepth to createModernRoof
+                standDepth,
+                adjustedLength,
+                adjustedWidth
             });
             break;
         case 'classic':
@@ -50,7 +55,9 @@ function createStadiumRoof(scene, options = {}) {
                 roofThickness, 
                 roofColor, 
                 roofTransparency,
-                supportColor
+                supportColor,
+                adjustedLength,
+                adjustedWidth
             });
             break;
         case 'partial':
@@ -61,7 +68,9 @@ function createStadiumRoof(scene, options = {}) {
                 roofThickness, 
                 roofColor, 
                 roofTransparency,
-                supportColor
+                supportColor,
+                adjustedLength,
+                adjustedWidth
             });
             break;
     }
@@ -79,7 +88,9 @@ function createModernRoof(group, options) {
         roofColor, 
         roofTransparency,
         supportColor,
-        standDepth = 20  // Add default value here as well
+        standDepth = 20,
+        adjustedLength,
+        adjustedWidth
     } = options;
 
     // Create curved roof
@@ -91,8 +102,8 @@ function createModernRoof(group, options) {
     roofShape.lineTo(-totalLength/2, -totalWidth/2);
 
     // Create a hole in the roof (for the field)
-    const holeLength = totalLength * 0.7;
-    const holeWidth = totalWidth * 0.7;
+    const holeLength = adjustedLength * 0.7;
+    const holeWidth = adjustedWidth * 0.7;
     const hole = new THREE.Path();
     hole.moveTo(-holeLength/2, -holeWidth/2);
     hole.lineTo(holeLength/2, -holeWidth/2);
@@ -167,7 +178,9 @@ function createClassicRoof(group, options) {
         roofThickness, 
         roofColor, 
         roofTransparency,
-        supportColor
+        supportColor,
+        adjustedLength,
+        adjustedWidth
     } = options;
 
     // Create flat angled roof for each side
@@ -281,7 +294,9 @@ function createPartialRoof(group, options) {
         roofThickness, 
         roofColor, 
         roofTransparency,
-        supportColor
+        supportColor,
+        adjustedLength,
+        adjustedWidth
     } = options;
 
     // Only cover the main stand (west side)
