@@ -79,9 +79,9 @@ function createStandSection(side, options) {
 
     const sectionGroup = new THREE.Group();
     const tierHeight = height / tiers;
-    const standMaterial = new THREE.MeshPhongMaterial({ color });
-    const seatMaterial = new THREE.MeshPhongMaterial({ color: seatColor });
-    const railingMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const standMaterial = new THREE.MeshPhongMaterial({ color, receiveShadow: true });
+    const seatMaterial = new THREE.MeshPhongMaterial({ color: seatColor, receiveShadow: true });
+    const railingMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, receiveShadow: true });
 
     // Calculate position and rotation based on side
     let position = new THREE.Vector3();
@@ -196,9 +196,9 @@ function createCornerSection(side1, side2, options) {
 
     const cornerGroup = new THREE.Group();
     const tierHeight = height / tiers;
-    const standMaterial = new THREE.MeshPhongMaterial({ color });
-    const seatMaterial = new THREE.MeshPhongMaterial({ color: seatColor });
-    const railingMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const standMaterial = new THREE.MeshPhongMaterial({ color, receiveShadow: true });
+    const seatMaterial = new THREE.MeshPhongMaterial({ color: seatColor, receiveShadow: true });
+    const railingMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, receiveShadow: true });
 
     // Calculate corner position
     const cornerX = fieldLength/2 + standDepth/2;
