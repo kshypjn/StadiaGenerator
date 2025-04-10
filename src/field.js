@@ -26,7 +26,9 @@ function createField(type, scene) {
     geometry.scale(1, 0.85, 1);
   }
 
-  const material = new THREE.MeshPhongMaterial({ color: 0x228B22, side: THREE.DoubleSide, receiveShadow: true });
+  const material = new THREE.MeshPhongMaterial({ color: 0x228B22, side: THREE.DoubleSide });
+  field = new THREE.Mesh(geometry, material);
+  field.receiveShadow = true; // Set receiveShadow on the mesh, not the material
   field.rotation.x = -Math.PI / 2;
   scene.add(field);
 
