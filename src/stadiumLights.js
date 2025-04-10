@@ -107,6 +107,7 @@ function createFloodLights(group, options) {
     });
 }
 
+
 function clearStadiumLights(scene) {
     if (lightsGroup) {
         scene.remove(lightsGroup);
