@@ -38,11 +38,6 @@ const params = {
   standColor: '#1a1a1a',
   seatColor: '#808080',
   tierSpacing: 0.8,
-  standShape: 'rectangular',
-  standGaps: false,
-  bowlShape: 0,
-  stadiumWidth: 1,
-  stadiumLength: 1,
   enableRoof: false,
   roofStyle: 'modern',
   roofColor: '#ffffff',
@@ -53,10 +48,7 @@ const params = {
   lightColor: '#ffffff',
   lightIntensity: 1.0,
   individualStandControl: false,
-  enablePremiumTier: false,
-  premiumTierLevel: 1,
-  premiumColor: '#333333',
-  premiumSeatColor: '#CCCCCC',
+  
   // Individual stand parameters
   northHeight: 15,
   northTiers: 3,
@@ -120,30 +112,14 @@ const debouncedUpdateStands = debounce(() => {
                 seatColor: params.individualStandControl ? new THREE.Color(params.westSeatColor) : null
             }
         };
-        const premiumTier = {
-            enabled: params.enablePremiumTier,
-            tier: params.premiumTierLevel,
-            color: new THREE.Color(params.premiumColor),
-            seatColor: new THREE.Color(params.premiumSeatColor)
-        };
-        
-        const stadiumFootprint = {
-            width: params.stadiumWidth,
-            length: params.stadiumLength
-        };
-        
+
         createStands(scene, {
             height: params.standHeight,
             tiers: params.standTiers,
             color: new THREE.Color(params.standColor),
             seatColor: new THREE.Color(params.seatColor),
             tierSpacing: params.tierSpacing,
-            standShape: params.standShape,
-            standGaps: params.standGaps,
-            individualStands: individualStands,
-            premiumTier: premiumTier,
-            bowlShape: params.bowlShape,
-            stadiumFootprint: stadiumFootprint
+            individualStands: individualStands
         });
     }
 }, 100);
@@ -151,12 +127,20 @@ const debouncedUpdateStands = debounce(() => {
 const debouncedUpdateRoof = debounce(() => {
     clearRoof(scene);
     if (params.enableRoof && params.stadiumType === 'Football') {
+        const individualStands = params.individualStandControl ? {
+            north: { height: params.northHeight },
+            south: { height: params.southHeight },
+            east: { height: params.eastHeight },
+            west: { height: params.westHeight }
+        } : null;
+
         createStadiumRoof(scene, {
             standHeight: params.standHeight,
             roofStyle: params.roofStyle,
             roofColor: new THREE.Color(params.roofColor),
             roofTransparency: params.roofTransparency,
-            supportColor: new THREE.Color(params.standColor)
+            supportColor: new THREE.Color(params.standColor),
+            individualStands: individualStands
         });
     }
 }, 100);
@@ -195,9 +179,6 @@ standsFolder.add(params, 'standTiers', 1, 5, 1).name('Tiers').onChange(() => deb
 standsFolder.addColor(params, 'standColor').name('Stand Color').onChange(() => debouncedUpdateStands());
 standsFolder.addColor(params, 'seatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 standsFolder.add(params, 'tierSpacing', 0.5, 2.0, 0.1).name('Tier Spacing').onChange(() => debouncedUpdateStands());
-standsFolder.add(params, 'standShape', ['rectangular', 'curved', 'asymmetric']).name('Stand Shape').onChange(() => debouncedUpdateStands());
-standsFolder.add(params, 'standGaps').name('Add Stand Gaps').onChange(() => debouncedUpdateStands());
-standsFolder.add(params, 'bowlShape', 0, 1, 0.1).name('Bowl Roundness').onChange(() => debouncedUpdateStands());
 
 const roofFolder = gui.addFolder('Roof');
 roofFolder.add(params, 'enableRoof').name('Enable Roof').onChange(() => debouncedUpdateRoof());
@@ -211,30 +192,6 @@ lightsFolder.add(params, 'lightStyle', ['modern', 'classic', 'corner']).name('St
 lightsFolder.add(params, 'lightHeight', 20, 50, 5).name('Height').onChange(() => debouncedUpdateLights());
 lightsFolder.addColor(params, 'lightColor').name('Color').onChange(() => debouncedUpdateLights());
 lightsFolder.add(params, 'lightIntensity', 0.5, 3, 0.1).name('Intensity').onChange(() => debouncedUpdateLights());
-
-// INITIALIZATION
-createField(params.stadiumType, scene);
-debouncedUpdateStands();
-debouncedUpdateRoof();
-debouncedUpdateLights();
-
-const footprintFolder = standsFolder.addFolder('Stadium Footprint');
-footprintFolder.add(params, 'stadiumWidth', 0.8, 1.5, 0.05).name('Width').onChange(() => {
-  debouncedUpdateStands();
-  debouncedUpdateRoof();
-  debouncedUpdateLights();
-});
-footprintFolder.add(params, 'stadiumLength', 0.8, 1.5, 0.05).name('Length').onChange(() => {
-  debouncedUpdateStands();
-  debouncedUpdateRoof();
-  debouncedUpdateLights();
-});
-
-const premiumFolder = standsFolder.addFolder('Premium Seating');
-premiumFolder.add(params, 'enablePremiumTier').name('Enable Premium Tier').onChange(() => debouncedUpdateStands());
-premiumFolder.add(params, 'premiumTierLevel', 0, 4, 1).name('Tier Level').onChange(() => debouncedUpdateStands());
-premiumFolder.addColor(params, 'premiumColor').name('Color').onChange(() => debouncedUpdateStands());
-premiumFolder.addColor(params, 'premiumSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 
 // Individual stand controls
 const individualFolder = standsFolder.addFolder('Individual Stands');
@@ -268,6 +225,11 @@ westFolder.add(params, 'westTiers', 1, 5, 1).name('Tiers').onChange(() => deboun
 westFolder.addColor(params, 'westColor').name('Color').onChange(() => debouncedUpdateStands());
 westFolder.addColor(params, 'westSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 
+// INITIALIZATION
+createField(params.stadiumType, scene);
+debouncedUpdateStands();
+debouncedUpdateRoof();
+debouncedUpdateLights();
 
 // ANIMATION
 function animate() {
