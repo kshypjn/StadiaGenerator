@@ -39,11 +39,9 @@ const params = {
   seatColor: '#808080',
   tierSpacing: 0.8,
   enableRoof: false,
-  roofStyle: 'modern',
   roofColor: '#ffffff',
   roofTransparency: 0.5,
   enableLights: false,
-  lightStyle: 'modern',
   lightHeight: 30,
   lightColor: '#ffffff',
   lightIntensity: 1.0,
@@ -136,11 +134,9 @@ const debouncedUpdateRoof = debounce(() => {
 
         createStadiumRoof(scene, {
             standHeight: params.standHeight,
-            roofStyle: params.roofStyle,
             roofColor: new THREE.Color(params.roofColor),
             roofTransparency: params.roofTransparency,
-            supportColor: new THREE.Color(params.standColor),
-            individualStands: individualStands
+            supportColor: new THREE.Color(params.standColor)
         });
     }
 }, 100);
@@ -153,7 +149,6 @@ const debouncedUpdateLights = debounce(() => {
             lightHeight: params.lightHeight,
             lightColor: new THREE.Color(params.lightColor),
             lightIntensity: params.lightIntensity,
-            lightStyle: params.lightStyle
         });
     }
 }, 100);
@@ -182,13 +177,11 @@ standsFolder.add(params, 'tierSpacing', 0.5, 2.0, 0.1).name('Tier Spacing').onCh
 
 const roofFolder = gui.addFolder('Roof');
 roofFolder.add(params, 'enableRoof').name('Enable Roof').onChange(() => debouncedUpdateRoof());
-roofFolder.add(params, 'roofStyle', ['modern', 'classic', 'partial']).name('Style').onChange(() => debouncedUpdateRoof());
 roofFolder.addColor(params, 'roofColor').name('Color').onChange(() => debouncedUpdateRoof());
 roofFolder.add(params, 'roofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
 
 const lightsFolder = gui.addFolder('Lights');
 lightsFolder.add(params, 'enableLights').name('Enable Lights').onChange(() => debouncedUpdateLights());
-lightsFolder.add(params, 'lightStyle', ['modern', 'classic', 'corner']).name('Style').onChange(() => debouncedUpdateLights());
 lightsFolder.add(params, 'lightHeight', 20, 50, 5).name('Height').onChange(() => debouncedUpdateLights());
 lightsFolder.addColor(params, 'lightColor').name('Color').onChange(() => debouncedUpdateLights());
 lightsFolder.add(params, 'lightIntensity', 0.5, 3, 0.1).name('Intensity').onChange(() => debouncedUpdateLights());

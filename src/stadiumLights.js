@@ -10,7 +10,7 @@ function createStadiumLights(scene, options = {}) {
         standHeight = 15,
         lightHeight = 35,
         lightColor = 0xFFFFCC,
-        lightIntensity = 1.5,
+        lightIntensity = 1.5
     } = options;
 
     // Clear existing lights
@@ -105,7 +105,6 @@ function createFloodLights(group, options) {
         }
     });
 }
-
 
 function clearStadiumLights(scene) {
     if (lightsGroup) {
