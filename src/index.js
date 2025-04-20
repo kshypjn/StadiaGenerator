@@ -41,6 +41,24 @@ const params = {
   enableRoof: false,
   roofColor: '#ffffff',
   roofTransparency: 0.5,
+  individualRoofs: false,
+  northRoofEnabled: true,
+  northRoofHeight: 20,
+  northRoofColor: '#ffffff',
+  northRoofTransparency: 0.5,
+  southRoofEnabled: true,
+  southRoofHeight: 20,
+  southRoofColor: '#ffffff',
+  southRoofTransparency: 0.5,
+  eastRoofEnabled: true,
+  eastRoofHeight: 20,
+  eastRoofColor: '#ffffff',
+  eastRoofTransparency: 0.5,
+  westRoofEnabled: true,
+  westRoofHeight: 20,
+  westRoofColor: '#ffffff',
+  westRoofTransparency: 0.5,
+
   enableLights: false,
   lightHeight: 30,
   lightColor: '#ffffff',
@@ -136,10 +154,39 @@ const debouncedUpdateRoof = debounce(() => {
             standHeight: params.standHeight,
             roofColor: new THREE.Color(params.roofColor),
             roofTransparency: params.roofTransparency,
-            supportColor: new THREE.Color(params.standColor)
+            supportColor: new THREE.Color(params.standColor),
+            individualRoofs: params.individualRoofs,
+            individualRoofSettings: {
+                north: {
+                    enabled: params.northRoofEnabled,
+                    height: params.northRoofHeight,
+                    color: new THREE.Color(params.northRoofColor),
+                    transparency: params.northRoofTransparency
+                },
+                south: {
+                    enabled: params.southRoofEnabled,
+                    height: params.southRoofHeight,
+                    color: new THREE.Color(params.southRoofColor),
+                    transparency: params.southRoofTransparency
+                },
+                east: {
+                    enabled: params.eastRoofEnabled,
+                    height: params.eastRoofHeight,
+                    color: new THREE.Color(params.eastRoofColor),
+                    transparency: params.eastRoofTransparency
+                },
+                west: {
+                    enabled: params.westRoofEnabled,
+                    height: params.westRoofHeight,
+                    color: new THREE.Color(params.westRoofColor),
+                    transparency: params.westRoofTransparency
+                }
+            },
+            individualStands: individualStands
         });
     }
 }, 100);
+
 
 const debouncedUpdateLights = debounce(() => {
     clearStadiumLights(scene);
@@ -179,6 +226,7 @@ const roofFolder = gui.addFolder('Roof');
 roofFolder.add(params, 'enableRoof').name('Enable Roof').onChange(() => debouncedUpdateRoof());
 roofFolder.addColor(params, 'roofColor').name('Color').onChange(() => debouncedUpdateRoof());
 roofFolder.add(params, 'roofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
+roofFolder.add(params, 'individualRoofs').name('Individual Roofs').onChange(() => debouncedUpdateRoof());
 
 const lightsFolder = gui.addFolder('Lights');
 lightsFolder.add(params, 'enableLights').name('Enable Lights').onChange(() => debouncedUpdateLights());
@@ -218,6 +266,29 @@ westFolder.add(params, 'westTiers', 1, 5, 1).name('Tiers').onChange(() => deboun
 westFolder.addColor(params, 'westColor').name('Color').onChange(() => debouncedUpdateStands());
 westFolder.addColor(params, 'westSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 
+const northRoofFolder = roofFolder.addFolder('North Roof');
+northRoofFolder.add(params, 'northRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
+northRoofFolder.add(params, 'northRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
+northRoofFolder.addColor(params, 'northRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
+northRoofFolder.add(params, 'northRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
+
+const southRoofFolder = roofFolder.addFolder('South Roof');
+southRoofFolder.add(params, 'southRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
+southRoofFolder.add(params, 'southRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
+southRoofFolder.addColor(params, 'southRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
+southRoofFolder.add(params, 'southRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
+
+const eastRoofFolder = roofFolder.addFolder('East Roof');
+eastRoofFolder.add(params, 'eastRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
+eastRoofFolder.add(params, 'eastRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
+eastRoofFolder.addColor(params, 'eastRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
+eastRoofFolder.add(params, 'eastRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
+
+const westRoofFolder = roofFolder.addFolder('West Roof');
+westRoofFolder.add(params, 'westRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
+westRoofFolder.add(params, 'westRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
+westRoofFolder.addColor(params, 'westRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
+westRoofFolder.add(params, 'westRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
 // INITIALIZATION
 createField(params.stadiumType, scene);
 debouncedUpdateStands();
