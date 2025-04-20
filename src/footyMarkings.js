@@ -2,41 +2,83 @@ import * as THREE from 'three';
 
 function createFieldMarkings(scene) {
   const group = new THREE.Group();
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+  
+  const lineMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0xffffff,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.9
+  });
 
   const fieldLength = 105;
   const fieldWidth = 68;
   const halfL = fieldLength / 2;
   const halfW = fieldWidth / 2;
   const centerCircleRadius = 9.15;
+  const lineWidth = 0.12; 
+  const lineHeight = 0.02; 
+
+
+  function createLine(points) {
+    const lineGeometry = new THREE.BufferGeometry();
+    const vertices = [];
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const direction = new THREE.Vector3().subVectors(p2, p1).normalize();
+      const perpendicular = new THREE.Vector3(-direction.z, 0, direction.x).multiplyScalar(lineWidth / 2);
+
+      vertices.push(
+        p1.x + perpendicular.x, p1.y, p1.z + perpendicular.z,
+        p1.x - perpendicular.x, p1.y, p1.z - perpendicular.z,
+        p2.x + perpendicular.x, p2.y, p2.z + perpendicular.z,
+        p2.x - perpendicular.x, p2.y, p2.z - perpendicular.z,
+        p2.x + perpendicular.x, p2.y, p2.z + perpendicular.z,
+        p1.x - perpendicular.x, p1.y, p1.z - perpendicular.z
+      );
+    }
+
+    lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    return new THREE.Mesh(lineGeometry, lineMaterial);
+  }
 
   // Boundary
   const boundary = [
-    new THREE.Vector3(-halfL, 0.01, -halfW),
-    new THREE.Vector3(-halfL, 0.01, halfW),
-    new THREE.Vector3(halfL, 0.01, halfW),
-    new THREE.Vector3(halfL, 0.01, -halfW),
-    new THREE.Vector3(-halfL, 0.01, -halfW),
+    new THREE.Vector3(-halfL, lineHeight, -halfW),
+    new THREE.Vector3(-halfL, lineHeight, halfW),
+    new THREE.Vector3(halfL, lineHeight, halfW),
+    new THREE.Vector3(halfL, lineHeight, -halfW),
+    new THREE.Vector3(-halfL, lineHeight, -halfW),
   ];
-  group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(boundary), lineMaterial));
+  group.add(createLine(boundary));
 
   // Center Line
-  group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, 0.01, -halfW),
-    new THREE.Vector3(0, 0.01, halfW)
-  ]), lineMaterial));
+  group.add(createLine([
+    new THREE.Vector3(0, lineHeight, -halfW),
+    new THREE.Vector3(0, lineHeight, halfW)
+  ]));
 
   // Center Circle
-  const centerGeom = new THREE.CircleGeometry(centerCircleRadius, 64);
-  const centerPts = [];
-  for (let i = 1; i < centerGeom.attributes.position.count; i++) {
-    centerPts.push(new THREE.Vector3().fromBufferAttribute(centerGeom.attributes.position, i));
+  const centerPoints = [];
+  const segments = 64;
+  for (let i = 0; i <= segments; i++) {
+    const angle = (i / segments) * Math.PI * 2;
+    centerPoints.push(new THREE.Vector3(
+      Math.cos(angle) * centerCircleRadius,
+      lineHeight,
+      Math.sin(angle) * centerCircleRadius
+    ));
   }
-  const centerCircle = new THREE.LineLoop(
-    new THREE.BufferGeometry().setFromPoints(centerPts), lineMaterial
+  group.add(createLine(centerPoints));
+
+  // Center spot
+  const centerSpot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.2, lineHeight * 2, 16),
+    lineMaterial
   );
-  centerCircle.rotation.x = -Math.PI / 2;
-  group.add(centerCircle);
+  centerSpot.position.set(0, lineHeight, 0);
+  group.add(centerSpot);
 
   // Boxes & Spots
   const penaltyDepth = 16.5, penaltyWidth = 40.3;
@@ -45,38 +87,45 @@ function createFieldMarkings(scene) {
     const x = side * halfL;
 
     // Penalty box
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(x, 0.01, -penaltyWidth / 2),
-      new THREE.Vector3(x - side * penaltyDepth, 0.01, -penaltyWidth / 2),
-      new THREE.Vector3(x - side * penaltyDepth, 0.01, penaltyWidth / 2),
-      new THREE.Vector3(x, 0.01, penaltyWidth / 2),
-      new THREE.Vector3(x, 0.01, -penaltyWidth / 2)
-    ]), lineMaterial));
+    group.add(createLine([
+      new THREE.Vector3(x, lineHeight, -penaltyWidth / 2),
+      new THREE.Vector3(x - side * penaltyDepth, lineHeight, -penaltyWidth / 2),
+      new THREE.Vector3(x - side * penaltyDepth, lineHeight, penaltyWidth / 2),
+      new THREE.Vector3(x, lineHeight, penaltyWidth / 2),
+      new THREE.Vector3(x, lineHeight, -penaltyWidth / 2)
+    ]));
 
     // Goal box
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(x, 0.01, -goalWidth / 2),
-      new THREE.Vector3(x - side * goalDepth, 0.01, -goalWidth / 2),
-      new THREE.Vector3(x - side * goalDepth, 0.01, goalWidth / 2),
-      new THREE.Vector3(x, 0.01, goalWidth / 2),
-      new THREE.Vector3(x, 0.01, -goalWidth / 2)
-    ]), lineMaterial));
+    group.add(createLine([
+      new THREE.Vector3(x, lineHeight, -goalWidth / 2),
+      new THREE.Vector3(x - side * goalDepth, lineHeight, -goalWidth / 2),
+      new THREE.Vector3(x - side * goalDepth, lineHeight, goalWidth / 2),
+      new THREE.Vector3(x, lineHeight, goalWidth / 2),
+      new THREE.Vector3(x, lineHeight, -goalWidth / 2)
+    ]));
 
     // Penalty spot
-    const spot = new THREE.Mesh(new THREE.CircleGeometry(0.2, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    spot.rotation.x = -Math.PI / 2;
-    spot.position.set(x - side * 11, 0.011, 0);
+    const spot = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.2, lineHeight * 2, 16),
+      lineMaterial
+    );
+    spot.position.set(x - side * 11, lineHeight, 0);
     group.add(spot);
   });
 
   // Corner arcs
-  const drawArc = (x, z, angle) => {
-    const arc = [];
-    for (let i = 0; i <= 16; i++) {
-      const a = angle + (Math.PI / 2) * (i / 16);
-      arc.push(new THREE.Vector3(x + Math.cos(a), 0.01, z + Math.sin(a)));
+  const drawArc = (x, z, startAngle) => {
+    const arcPoints = [];
+    const arcSegments = 16;
+    for (let i = 0; i <= arcSegments; i++) {
+      const angle = startAngle + (Math.PI / 2) * (i / arcSegments);
+      arcPoints.push(new THREE.Vector3(
+        x + Math.cos(angle),
+        lineHeight,
+        z + Math.sin(angle)
+      ));
     }
-    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arc), lineMaterial));
+    group.add(createLine(arcPoints));
   };
 
   drawArc(-halfL, -halfW, 0);
