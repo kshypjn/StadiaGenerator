@@ -55,6 +55,7 @@ const params = {
   westRoofColor: '#ffffff',
   westRoofTransparency: 0.5,
   enableLights: false,
+  lightsOn: true,  
   lightHeight: 30,
   lightColor: '#ffffff',
   lightIntensity: 1.0,
@@ -191,6 +192,7 @@ const debouncedUpdateLights = debounce(() => {
             lightHeight: params.lightHeight,
             lightColor: new THREE.Color(params.lightColor),
             lightIntensity: params.lightIntensity,
+            lightsOn: params.lightsOn  
         });
     }
 }, 100);
@@ -224,9 +226,18 @@ roofFolder.add(params, 'roofTransparency', 0.1, 1, 0.1).name('Transparency').onC
 
 const lightsFolder = gui.addFolder('Lights');
 lightsFolder.add(params, 'enableLights').name('Enable Lights').onChange(() => debouncedUpdateLights());
+lightsFolder.add(params, 'lightsOn').name('Lights On').onChange(() => {
+    if (params.enableLights) {
+        toggleLights(params.lightsOn);
+    }
+});
 lightsFolder.add(params, 'lightHeight', 20, 50, 5).name('Height').onChange(() => debouncedUpdateLights());
 lightsFolder.addColor(params, 'lightColor').name('Color').onChange(() => debouncedUpdateLights());
-lightsFolder.add(params, 'lightIntensity', 0.5, 3, 0.1).name('Intensity').onChange(() => debouncedUpdateLights());
+lightsFolder.add(params, 'lightIntensity', 0.5, 3, 0.1).name('Intensity').onChange(() => {
+    if (params.enableLights && params.lightsOn) {
+        toggleLights(true);
+    }
+});
 
 // Individual stand controls
 const individualFolder = standsFolder.addFolder('Individual Stands');
