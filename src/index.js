@@ -43,22 +43,17 @@ const params = {
   roofTransparency: 0.5,
   individualRoofs: false,
   northRoofEnabled: true,
-  northRoofHeight: 20,
   northRoofColor: '#ffffff',
   northRoofTransparency: 0.5,
   southRoofEnabled: true,
-  southRoofHeight: 20,
   southRoofColor: '#ffffff',
   southRoofTransparency: 0.5,
   eastRoofEnabled: true,
-  eastRoofHeight: 20,
   eastRoofColor: '#ffffff',
   eastRoofTransparency: 0.5,
   westRoofEnabled: true,
-  westRoofHeight: 20,
   westRoofColor: '#ffffff',
   westRoofTransparency: 0.5,
-
   enableLights: false,
   lightHeight: 30,
   lightColor: '#ffffff',
@@ -155,29 +150,29 @@ const debouncedUpdateRoof = debounce(() => {
             roofColor: new THREE.Color(params.roofColor),
             roofTransparency: params.roofTransparency,
             supportColor: new THREE.Color(params.standColor),
-            individualRoofs: params.individualRoofs,
+            individualRoofs: params.individualStandControl,
             individualRoofSettings: {
                 north: {
                     enabled: params.northRoofEnabled,
-                    height: params.northRoofHeight,
+                    height: params.northHeight + 3,
                     color: new THREE.Color(params.northRoofColor),
                     transparency: params.northRoofTransparency
                 },
                 south: {
                     enabled: params.southRoofEnabled,
-                    height: params.southRoofHeight,
+                    height: params.southHeight + 3,
                     color: new THREE.Color(params.southRoofColor),
                     transparency: params.southRoofTransparency
                 },
                 east: {
                     enabled: params.eastRoofEnabled,
-                    height: params.eastRoofHeight,
+                    height: params.eastHeight + 3,
                     color: new THREE.Color(params.eastRoofColor),
                     transparency: params.eastRoofTransparency
                 },
                 west: {
                     enabled: params.westRoofEnabled,
-                    height: params.westRoofHeight,
+                    height: params.westHeight + 3,
                     color: new THREE.Color(params.westRoofColor),
                     transparency: params.westRoofTransparency
                 }
@@ -226,7 +221,6 @@ const roofFolder = gui.addFolder('Roof');
 roofFolder.add(params, 'enableRoof').name('Enable Roof').onChange(() => debouncedUpdateRoof());
 roofFolder.addColor(params, 'roofColor').name('Color').onChange(() => debouncedUpdateRoof());
 roofFolder.add(params, 'roofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
-roofFolder.add(params, 'individualRoofs').name('Individual Roofs').onChange(() => debouncedUpdateRoof());
 
 const lightsFolder = gui.addFolder('Lights');
 lightsFolder.add(params, 'enableLights').name('Enable Lights').onChange(() => debouncedUpdateLights());
@@ -236,57 +230,70 @@ lightsFolder.add(params, 'lightIntensity', 0.5, 3, 0.1).name('Intensity').onChan
 
 // Individual stand controls
 const individualFolder = standsFolder.addFolder('Individual Stands');
-individualFolder.add(params, 'individualStandControl').name('Enable').onChange(() => debouncedUpdateStands());
+individualFolder.add(params, 'individualStandControl').name('Enable').onChange(() => {
+    debouncedUpdateStands();
+    debouncedUpdateRoof();
+  });
+
 
 // North stand controls
 const northFolder = individualFolder.addFolder('North Stand');
-northFolder.add(params, 'northHeight', 5, 30, 1).name('Height').onChange(() => debouncedUpdateStands());
+northFolder.add(params, 'northHeight', 5, 30, 1).name('Height').onChange(() => {
+    debouncedUpdateStands();
+    debouncedUpdateRoof();
+    debouncedUpdateLights();
+});
 northFolder.add(params, 'northTiers', 1, 5, 1).name('Tiers').onChange(() => debouncedUpdateStands());
 northFolder.addColor(params, 'northColor').name('Color').onChange(() => debouncedUpdateStands());
 northFolder.addColor(params, 'northSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 
 // South stand controls
 const southFolder = individualFolder.addFolder('South Stand');
-southFolder.add(params, 'southHeight', 5, 30, 1).name('Height').onChange(() => debouncedUpdateStands());
+southFolder.add(params, 'southHeight', 5, 30, 1).name('Height').onChange(() => {
+    debouncedUpdateStands();
+    debouncedUpdateRoof();
+    debouncedUpdateLights();
+});
 southFolder.add(params, 'southTiers', 1, 5, 1).name('Tiers').onChange(() => debouncedUpdateStands());
 southFolder.addColor(params, 'southColor').name('Color').onChange(() => debouncedUpdateStands());
 southFolder.addColor(params, 'southSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 
 // East stand controls
 const eastFolder = individualFolder.addFolder('East Stand');
-eastFolder.add(params, 'eastHeight', 5, 30, 1).name('Height').onChange(() => debouncedUpdateStands());
+eastFolder.add(params, 'eastHeight', 5, 30, 1).name('Height').onChange(() => {
+    debouncedUpdateStands();
+    debouncedUpdateRoof();
+    debouncedUpdateLights();
+});
 eastFolder.add(params, 'eastTiers', 1, 5, 1).name('Tiers').onChange(() => debouncedUpdateStands());
 eastFolder.addColor(params, 'eastColor').name('Color').onChange(() => debouncedUpdateStands());
 eastFolder.addColor(params, 'eastSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
 
 // West stand controls
 const westFolder = individualFolder.addFolder('West Stand');
-westFolder.add(params, 'westHeight', 5, 30, 1).name('Height').onChange(() => debouncedUpdateStands());
-westFolder.add(params, 'westTiers', 1, 5, 1).name('Tiers').onChange(() => debouncedUpdateStands());
-westFolder.addColor(params, 'westColor').name('Color').onChange(() => debouncedUpdateStands());
-westFolder.addColor(params, 'westSeatColor').name('Seat Color').onChange(() => debouncedUpdateStands());
+westFolder.add(params, 'westHeight', 5, 30, 1).name('Height').onChange(() => {
+    debouncedUpdateStands();
+    debouncedUpdateRoof();
+    debouncedUpdateLights();
+});
 
 const northRoofFolder = roofFolder.addFolder('North Roof');
 northRoofFolder.add(params, 'northRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
-northRoofFolder.add(params, 'northRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
 northRoofFolder.addColor(params, 'northRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
 northRoofFolder.add(params, 'northRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
 
 const southRoofFolder = roofFolder.addFolder('South Roof');
 southRoofFolder.add(params, 'southRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
-southRoofFolder.add(params, 'southRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
 southRoofFolder.addColor(params, 'southRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
 southRoofFolder.add(params, 'southRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
 
 const eastRoofFolder = roofFolder.addFolder('East Roof');
 eastRoofFolder.add(params, 'eastRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
-eastRoofFolder.add(params, 'eastRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
 eastRoofFolder.addColor(params, 'eastRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
 eastRoofFolder.add(params, 'eastRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
 
 const westRoofFolder = roofFolder.addFolder('West Roof');
 westRoofFolder.add(params, 'westRoofEnabled').name('Enabled').onChange(() => debouncedUpdateRoof());
-westRoofFolder.add(params, 'westRoofHeight', 10, 40, 1).name('Height').onChange(() => debouncedUpdateRoof());
 westRoofFolder.addColor(params, 'westRoofColor').name('Color').onChange(() => debouncedUpdateRoof());
 westRoofFolder.add(params, 'westRoofTransparency', 0.1, 1, 0.1).name('Transparency').onChange(() => debouncedUpdateRoof());
 // INITIALIZATION

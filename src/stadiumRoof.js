@@ -106,7 +106,7 @@ function createIndividualRoof(group, options) {
         adjustedWidth
     } = options;
 
-    // Create a roof section for a specific side
+    // Create materials
     const roofMaterial = new THREE.MeshPhongMaterial({
         color: roofColor,
         transparent: true,
@@ -121,42 +121,42 @@ function createIndividualRoof(group, options) {
     
     switch(side) {
         case 'north':
-            roofWidth = standDepth + 10; // 10 units overhang
-            roofLength = totalLength;
+            roofWidth = standDepth;
+            roofLength = adjustedLength;
             xPos = 0;
-            zPos = -totalWidth/2 + standDepth/2;
-            rotation = 0;
-            break;
-        case 'south':
-            roofWidth = standDepth + 10;
-            roofLength = totalLength;
-            xPos = 0;
-            zPos = totalWidth/2 - standDepth/2;
+            zPos = -adjustedWidth/2 - standDepth/2;
             rotation = Math.PI;
             break;
+        case 'south':
+            roofWidth = standDepth;
+            roofLength = adjustedLength;
+            xPos = 0;
+            zPos = adjustedWidth/2 + standDepth/2;
+            rotation = 0;
+            break;
         case 'east':
-            roofWidth = standDepth + 10;
-            roofLength = totalWidth - (2 * standDepth); // Avoid overlapping
-            xPos = totalLength/2 - standDepth/2;
+            roofWidth = standDepth;
+            roofLength = adjustedWidth;
+            xPos = adjustedLength/2 + standDepth/2;
             zPos = 0;
-            rotation = Math.PI * 1.5;
+            rotation = -Math.PI/2;
             break;
         case 'west':
-            roofWidth = standDepth + 10;
-            roofLength = totalWidth - (2 * standDepth); // Avoid overlapping
-            xPos = -totalLength/2 + standDepth/2;
+            roofWidth = standDepth;
+            roofLength = adjustedWidth;
+            xPos = -adjustedLength/2 - standDepth/2;
             zPos = 0;
-            rotation = Math.PI * 0.5;
+            rotation = Math.PI/2;
             break;
     }
     
     // Create the roof shape
     const roofShape = new THREE.Shape();
-    roofShape.moveTo(-roofLength/2, 0);
-    roofShape.lineTo(roofLength/2, 0);
-    roofShape.lineTo(roofLength/2, roofWidth);
-    roofShape.lineTo(-roofLength/2, roofWidth);
-    roofShape.lineTo(-roofLength/2, 0);
+    roofShape.moveTo(-roofLength/2, -roofWidth/2);
+    roofShape.lineTo(roofLength/2, -roofWidth/2);
+    roofShape.lineTo(roofLength/2, roofWidth/2);
+    roofShape.lineTo(-roofLength/2, roofWidth/2);
+    roofShape.lineTo(-roofLength/2, -roofWidth/2);
     
     // Extrude settings
     const extrudeSettings = {
@@ -168,35 +168,65 @@ function createIndividualRoof(group, options) {
     // Create the roof
     const roofGeometry = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
     const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-    roof.position.set(xPos, roofHeight, zPos);
-    roof.rotation.x = Math.PI / 2;
-    roof.rotation.z = rotation;
+    
+    // Position and rotate the roof
+    if (side === 'east' || side === 'west') {
+        // For east/west stands, we need to rotate differently
+        roof.position.set(xPos, roofHeight, zPos);
+        roof.rotation.x = Math.PI / 2;
+        roof.rotation.z = rotation;
+    } else {
+        // North/south stands keep the original rotation
+        roof.position.set(xPos, roofHeight, zPos);
+        roof.rotation.x = Math.PI / 2;
+        roof.rotation.y = rotation;
+    }
+    
     group.add(roof);
     
-    // Create supports
-    const supportCount = Math.ceil(roofLength / 15); // One support every 15 units
-    const supportSpacing = roofLength / supportCount;
+    // Create supports with arches
+    const archCount = Math.max(4, Math.floor(roofLength / 15)); // Scale number of arches with length
+    const archSpacing = roofLength / (archCount - 1);
+    const archThickness = 1;
     
-    for (let i = 0; i < supportCount; i++) {
-        const supportX = -roofLength/2 + (i + 0.5) * supportSpacing;
+    for (let i = 0; i < archCount; i++) {
+        const archPos = -roofLength/2 + i * archSpacing;
         
-        // Slightly angle the supports
+        // Create arch curve
         const curve = new THREE.QuadraticBezierCurve3(
-            new THREE.Vector3(supportX, 0, 0),
-            new THREE.Vector3(supportX, roofHeight * 0.7, roofWidth * 0.25),
-            new THREE.Vector3(supportX, roofHeight, roofWidth)
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, roofHeight * 1.3, 0),
+            new THREE.Vector3(0, roofHeight, roofWidth)
         );
         
-        // Create tubular support
-        const tubeGeometry = new THREE.TubeGeometry(curve, 20, 0.5, 8, false);
+        // Create tubular arch
+        const tubeGeometry = new THREE.TubeGeometry(curve, 20, archThickness/2, 8, false);
         const tubeMesh = new THREE.Mesh(tubeGeometry, supportMaterial);
         
-        // Apply rotations and positions
-        tubeMesh.position.set(xPos, 0, zPos);
-        tubeMesh.rotation.x = Math.PI / 2;
-        tubeMesh.rotation.z = rotation;
+        // Position and rotate arch based on stand side
+        if (side === 'east' || side === 'west') {
+            tubeMesh.position.set(xPos, 0, zPos + archPos);
+            tubeMesh.rotation.y = rotation + Math.PI/2;
+        } else {
+            tubeMesh.position.set(xPos + archPos, 0, zPos);
+            tubeMesh.rotation.y = Math.PI/2;
+        }
         
         group.add(tubeMesh);
+        
+        // Add vertical supports
+        const supportHeight = roofHeight;
+        const supportGeometry = new THREE.CylinderGeometry(archThickness/2, archThickness/2, supportHeight, 8);
+        const supportMesh = new THREE.Mesh(supportGeometry, supportMaterial);
+        
+        // Position the support based on stand side
+        if (side === 'east' || side === 'west') {
+            supportMesh.position.set(xPos, supportHeight/2, zPos + archPos);
+        } else {
+            supportMesh.position.set(xPos + archPos, supportHeight/2, zPos);
+        }
+        
+        group.add(supportMesh);
     }
 }
 
